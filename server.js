@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -12,7 +13,15 @@ const io = new Server(server, {
   },
 });
 
+const PORT = process.env.PORT || 10000;
 const rooms = {};
+
+app.use(cors());
+
+// Health check endpoint
+app.get("/", (req, res) => {
+  res.send("WebSocket Server is Running...");
+});
 
 io.on("connection", (socket) => {
   console.log("New user connected:", socket.id);
@@ -38,7 +47,7 @@ io.on("connection", (socket) => {
   // Updating Progress
   socket.on("updateProgress", ({ roomId, typedText }) => {
     if (rooms[roomId] && rooms[roomId].players[socket.id]) {
-      rooms[roomId].players[socket.id].wpm = Math.floor(Math.random() * 100); // Replace with actual calculation
+      rooms[roomId].players[socket.id].wpm = Math.floor(Math.random() * 100);
       io.to(roomId).emit("updateLeaderboard", { players: rooms[roomId].players });
     }
   });
@@ -59,6 +68,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3001, () => {
-  console.log("Server running on port 3001");
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
